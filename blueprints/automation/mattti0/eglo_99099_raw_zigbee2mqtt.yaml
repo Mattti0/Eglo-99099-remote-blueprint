@@ -31,36 +31,42 @@ blueprint:
             - domain: light
     favourite_scene11:
       name: Nr1 Favourite scene of light 1
+      default:
       selector:
         entity:
           filter:
             - domain: scene
     favourite_scene12:
       name: Nr2 Favourite scene of light 1
+      default:
       selector:
         entity:
           filter:
             - domain: scene
     favourite_scene21:
       name: Nr1 Favourite scene of light 2
+      default:
       selector:
         entity:
           filter:
             - domain: scene
     favourite_scene22:
       name: Nr2 Favourite scene of light 2
+      default:
       selector:
         entity:
           filter:
             - domain: scene
     favourite_scene31:
       name: Nr1 Favourite scene of light 3
+      default:
       selector:
         entity:
           filter:
             - domain: scene
     favourite_scene32:
       name: Nr2 Favourite scene of light 3
+      default:
       selector:
         entity:
           filter:
@@ -171,27 +177,27 @@ actions:
         {% endif %}
       target_scene_1: >
         {% if active_group_state == '32778' %}
-          {{ favourite_scene11 }}
+          {{ favourite_scene11 if favourite_scene11 else 'none' }}
         {% elif active_group_state == '32779' %}
-          {{ favourite_scene21 }}
+          {{ favourite_scene21 if favourite_scene21 else 'none' }}
         {% elif active_group_state == '32780' %}
-          {{ favourite_scene31 }}
+          {{ favourite_scene31 if favourite_scene31 else 'none' }}
         {% else %}
           none
         {% endif %}
       target_scene_2: >
         {% if active_group_state == '32778' %}
-          {{ favourite_scene12 }}
+          {{ favourite_scene12 if favourite_scene12 else 'none' }}
         {% elif active_group_state == '32779' %}
-          {{ favourite_scene22 }}
+          {{ favourite_scene22 if favourite_scene22 else 'none' }}
         {% elif active_group_state == '32780' %}
-          {{ favourite_scene32 }}
+          {{ favourite_scene32 if favourite_scene32 else 'none' }}
         {% else %}
           none
         {% endif %}
 
   - condition: template
-    value_template: "{{ target_light != 'none' and target_scene_1 != 'none' and target_scene_2 != 'none' }}"
+    value_template: "{{ target_light != 'none' }}"
 
   - choose:
       - conditions:
@@ -270,17 +276,25 @@ actions:
           - condition: template
             value_template: "{{ action_key == 'recall_1' }}"
         sequence:
-          - action: scene.turn_on
-            target:
-              entity_id: "{{ target_scene_1 }}"
+          - if:
+              - condition: template
+                value_template: "{{ target_scene_1 | trim != 'none' }}"
+            then:
+              - action: scene.turn_on
+                target:
+                  entity_id: "{{ target_scene_1 }}"
 
       - conditions:
           - condition: template
             value_template: "{{ action_key == 'recall_2' }}"
         sequence:
-          - action: scene.turn_on
-            target:
-              entity_id: "{{ target_scene_2 }}"
+          - if:
+              - condition: template
+                value_template: "{{ target_scene_2 | trim != 'none' }}"
+            then:
+              - action: scene.turn_on
+                target:
+                  entity_id: "{{ target_scene_2 }}"
 
       - conditions:
           - condition: template
