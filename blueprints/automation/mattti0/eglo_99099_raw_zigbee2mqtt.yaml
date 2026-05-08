@@ -158,12 +158,7 @@ actions:
       refresh_wrap_brightness: 2
       brightness_step_up: "{{ ((maxbrightness * brightness_up_percent) / 100) | int }}"
       brightness_step_down: "{{ ((maxbrightness * brightness_down_percent) / 100) | int }}"
-      action_key: >
-        {% if remote_action in ['on', 'off', 'brightness_step_down', 'brightness_step_up', 'color_temperature_step_down', 'color_temperature_step_up', 'recall_1', 'recall_2'] %}
-          {{ remote_action }}_1
-        {% else %}
-          {{ remote_action }}
-        {% endif %}
+      action_key: "{{ remote_action }}"
       target_light: >
         {% if active_group_state == '32778' %}
           {{ light_group1_entity }}
@@ -201,7 +196,7 @@ actions:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'on_1' }}"
+            value_template: "{{ action_key == 'on' }}"
         sequence:
           - action: light.turn_on
             target:
@@ -209,7 +204,7 @@ actions:
 
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'off_1' }}"
+            value_template: "{{ action_key == 'off' }}"
         sequence:
           - action: light.turn_off
             target:
@@ -217,7 +212,7 @@ actions:
 
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'brightness_step_down_1' }}"
+            value_template: "{{ action_key == 'brightness_step_down' }}"
         sequence:
           - action: light.turn_on
             target:
@@ -230,7 +225,7 @@ actions:
 
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'brightness_step_up_1' }}"
+            value_template: "{{ action_key == 'brightness_step_up' }}"
         sequence:
           - action: light.turn_on
             target:
@@ -243,7 +238,7 @@ actions:
 
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'color_temperature_step_down_1' }}"
+            value_template: "{{ action_key == 'color_temperature_step_down' }}"
         sequence:
           - action: light.turn_on
             target:
@@ -258,7 +253,7 @@ actions:
 
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'color_temperature_step_up_1' }}"
+            value_template: "{{ action_key == 'color_temperature_step_up' }}"
         sequence:
           - action: light.turn_on
             target:
@@ -273,7 +268,7 @@ actions:
 
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'recall_1_1' }}"
+            value_template: "{{ action_key == 'recall_1' }}"
         sequence:
           - action: scene.turn_on
             target:
@@ -281,7 +276,7 @@ actions:
 
       - conditions:
           - condition: template
-            value_template: "{{ action_key == 'recall_2_1' }}"
+            value_template: "{{ action_key == 'recall_2' }}"
         sequence:
           - action: scene.turn_on
             target:
