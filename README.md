@@ -7,8 +7,5 @@ Home Assistant blueprint for the Eglo connect.z 99099 Zigbee remote using raw Zi
 Blueprint file:
 - `blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml`
 
-Repository:
-- https://github.com/Mattti0/Eglo-99099-remote-blueprint
-
 Original blueprint inspiration:
 - https://community.home-assistant.io/t/eglo-99099-remote-blueprint/858066
