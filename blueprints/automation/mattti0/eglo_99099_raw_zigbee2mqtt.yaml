@@ -1,7 +1,8 @@
 blueprint:
   name: EGLO 99099 blueprint (raw Zigbee2MQTT)
-  description: This blueprint maps all buttons on the remote to actions/scenes/lights
-    using raw Zigbee2MQTT payloads.
+  description: This blueprint maps the usable buttons on the remote to light actions
+    using raw Zigbee2MQTT payloads. The two favourite (heart) buttons are not
+    exposed as Zigbee events and cannot be used for scene triggers.
   author: Matti Wenell
   domain: automation
   homeassistant:
@@ -40,66 +41,6 @@ blueprint:
           filter:
           - domain:
             - light
-          reorder: false
-          multiple: false
-    favourite_scene11:
-      name: Nr1 Favourite scene of light 1
-      default:
-      selector:
-        entity:
-          filter:
-          - domain:
-            - scene
-          reorder: false
-          multiple: false
-    favourite_scene12:
-      name: Nr2 Favourite scene of light 1
-      default:
-      selector:
-        entity:
-          filter:
-          - domain:
-            - scene
-          reorder: false
-          multiple: false
-    favourite_scene21:
-      name: Nr1 Favourite scene of light 2
-      default:
-      selector:
-        entity:
-          filter:
-          - domain:
-            - scene
-          reorder: false
-          multiple: false
-    favourite_scene22:
-      name: Nr2 Favourite scene of light 2
-      default:
-      selector:
-        entity:
-          filter:
-          - domain:
-            - scene
-          reorder: false
-          multiple: false
-    favourite_scene31:
-      name: Nr1 Favourite scene of light 3
-      default:
-      selector:
-        entity:
-          filter:
-          - domain:
-            - scene
-          reorder: false
-          multiple: false
-    favourite_scene32:
-      name: Nr2 Favourite scene of light 3
-      default:
-      selector:
-        entity:
-          filter:
-          - domain:
-            - scene
           reorder: false
           multiple: false
     brightness_up_percent:
@@ -188,12 +129,6 @@ actions:
     light_group1_entity: !input light_group1_entity
     light_group2_entity: !input light_group2_entity
     light_group3_entity: !input light_group3_entity
-    favourite_scene11: !input favourite_scene11
-    favourite_scene12: !input favourite_scene12
-    favourite_scene21: !input favourite_scene21
-    favourite_scene22: !input favourite_scene22
-    favourite_scene31: !input favourite_scene31
-    favourite_scene32: !input favourite_scene32
     brightness_up_percent: !input brightness_up_percent
     brightness_down_percent: !input brightness_down_percent
     color_temperature_up_quantity: !input color_temperature_up_quantity
@@ -210,8 +145,6 @@ actions:
       int }}'
     action_key: '{{ remote_action }}'
     target_light: "{% if active_group_state == 32778 %}\n  {{ light_group1_entity if light_group1_entity else 'none' }}\n{% elif active_group_state == 32779 %}\n  {{ light_group2_entity if light_group2_entity else 'none' }}\n{% elif active_group_state == 32780 %}\n  {{ light_group3_entity if light_group3_entity else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
-    target_scene_1: "{% if active_group_state == 32778 %}\n  {{ favourite_scene11 if favourite_scene11 else 'none' }}\n{% elif active_group_state == 32779 %}\n  {{ favourite_scene21 if favourite_scene21 else 'none' }}\n{% elif active_group_state == 32780 %}\n  {{ favourite_scene31 if favourite_scene31 else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
-    target_scene_2: "{% if active_group_state == 32778 %}\n  {{ favourite_scene12 if favourite_scene12 else 'none' }}\n{% elif active_group_state == 32779 %}\n  {{ favourite_scene22 if favourite_scene22 else 'none' }}\n{% elif active_group_state == 32780 %}\n  {{ favourite_scene32 if favourite_scene32 else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
 - condition: template
   value_template: "{{ target_light | string | trim | lower != 'none' }}"
 - choose:
@@ -287,28 +220,6 @@ actions:
           {% set upper = state_attr(target_light, 'max_color_temp_kelvin') | default(default_max_kelvin, true) | int %}
           {{ [[base + color_temperature_up_quantity, lower] | max, upper] | min }}
         transition: '{{ transition_time }}'
-  - conditions:
-    - condition: template
-      value_template: "{{ action_key == 'recall_1' }}"
-    sequence:
-    - if:
-      - condition: template
-        value_template: "{{ target_scene_1 | string | trim | lower != 'none' }}"
-      then:
-      - action: scene.turn_on
-        target:
-          entity_id: '{{ target_scene_1 }}'
-  - conditions:
-    - condition: template
-      value_template: '{{ action_key == ''recall_2'' }}'
-    sequence:
-    - if:
-      - condition: template
-        value_template: "{{ target_scene_2 | string | trim | lower != 'none' }}"
-      then:
-      - action: scene.turn_on
-        target:
-          entity_id: '{{ target_scene_2 }}'
   - conditions:
     - condition: template
       value_template: '{{ action_key == ''refresh'' }}'
