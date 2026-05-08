@@ -1,6 +1,7 @@
 blueprint:
   name: EGLO 99099 blueprint (raw Zigbee2MQTT)
-  description: This blueprint maps all buttons on the remote to actions/scenes/lights using raw Zigbee2MQTT payloads.
+  description: This blueprint maps all buttons on the remote to actions/scenes/lights
+    using raw Zigbee2MQTT payloads.
   author: Matti Wenell
   domain: automation
   homeassistant:
@@ -8,390 +9,417 @@ blueprint:
   input:
     mqtt_device:
       name: Zigbee2MQTT raw topic
-      description: MQTT topic published by the remote (JSON payload with action and action_group).
+      description: MQTT topic published by the remote (JSON payload with action and
+        action_group).
       selector:
         text:
+          multiline: false
+          multiple: false
     light_group1_entity:
       name: Light group 1
       selector:
         entity:
           filter:
-            - domain: light
+          - domain:
+            - light
+          reorder: false
+          multiple: false
     light_group2_entity:
       name: Light group 2
       selector:
         entity:
           filter:
-            - domain: light
+          - domain:
+            - light
+          reorder: false
+          multiple: false
     light_group3_entity:
       name: Light group 3
       selector:
         entity:
           filter:
-            - domain: light
+          - domain:
+            - light
+          reorder: false
+          multiple: false
     favourite_scene11:
       name: Nr1 Favourite scene of light 1
       default:
       selector:
         entity:
           filter:
-            - domain: scene
+          - domain:
+            - scene
+          reorder: false
+          multiple: false
     favourite_scene12:
       name: Nr2 Favourite scene of light 1
       default:
       selector:
         entity:
           filter:
-            - domain: scene
+          - domain:
+            - scene
+          reorder: false
+          multiple: false
     favourite_scene21:
       name: Nr1 Favourite scene of light 2
       default:
       selector:
         entity:
           filter:
-            - domain: scene
+          - domain:
+            - scene
+          reorder: false
+          multiple: false
     favourite_scene22:
       name: Nr2 Favourite scene of light 2
       default:
       selector:
         entity:
           filter:
-            - domain: scene
+          - domain:
+            - scene
+          reorder: false
+          multiple: false
     favourite_scene31:
       name: Nr1 Favourite scene of light 3
       default:
       selector:
         entity:
           filter:
-            - domain: scene
+          - domain:
+            - scene
+          reorder: false
+          multiple: false
     favourite_scene32:
       name: Nr2 Favourite scene of light 3
       default:
       selector:
         entity:
           filter:
-            - domain: scene
+          - domain:
+            - scene
+          reorder: false
+          multiple: false
     brightness_up_percent:
       name: Brightness up step size
       default: 20
       selector:
         number:
-          min: 1
-          max: 100
-          unit_of_measurement: "%"
+          min: 1.0
+          max: 100.0
+          unit_of_measurement: '%'
+          step: 1.0
+          mode: slider
     brightness_down_percent:
       name: Brightness down step size
       default: 20
       selector:
         number:
-          min: 1
-          max: 100
-          unit_of_measurement: "%"
+          min: 1.0
+          max: 100.0
+          unit_of_measurement: '%'
+          step: 1.0
+          mode: slider
     color_temperature_up_quantity:
       name: Color temperature up step size
       default: 500
       selector:
         number:
-          min: 1
-          max: 1000
+          min: 1.0
+          max: 1000.0
           unit_of_measurement: K
+          step: 1.0
+          mode: slider
     color_temperature_down_quantity:
       name: Color temperature down step size
       default: 500
       selector:
         number:
-          min: 1
-          max: 1000
+          min: 1.0
+          max: 1000.0
           unit_of_measurement: K
+          step: 1.0
+          mode: slider
     color_step_size:
       name: Color step size
       description: Per-channel RGB step size for Green/Red/Blue actions.
       default: 25
       selector:
         number:
-          min: 1
-          max: 255
+          min: 1.0
+          max: 255.0
+          step: 1.0
+          mode: slider
     transition_time:
       name: Transition time of light attributes
       default: 0.25
       selector:
         number:
-          min: 0
-          max: 2
+          min: 0.0
+          max: 2.0
           step: 0.01
           unit_of_measurement: s
-  source_url: https://github.com/Mattti0/Eglo-99099-remote-blueprint/blob/main/blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml
-
+          mode: slider
+  source_url: https://raw.githubusercontent.com/Mattti0/Eglo-99099-remote-blueprint/main/blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml
 mode: single
 max_exceeded: silent
-
 triggers:
-  - trigger: mqtt
-    topic: !input mqtt_device
-
+- trigger: mqtt
+  topic: !input mqtt_device
 conditions: []
-
 actions:
-  - variables:
-      maxbrightness: 255
-      default_brightness: 128
-      default_refresh_brightness: 10
-      default_kelvin: 2700
-      default_min_kelvin: 2000
-      default_max_kelvin: 6500
-      default_rgb: [255, 255, 255]
-      payload: "{{ trigger.payload_json if trigger.payload_json is defined else dict() }}"
-      remote_action: "{{ payload.action | default('') }}"
-      active_group_state: "{{ payload.action_group | default('') | string }}"
-      light_group1_entity: !input light_group1_entity
-      light_group2_entity: !input light_group2_entity
-      light_group3_entity: !input light_group3_entity
-      favourite_scene11: !input favourite_scene11
-      favourite_scene12: !input favourite_scene12
-      favourite_scene21: !input favourite_scene21
-      favourite_scene22: !input favourite_scene22
-      favourite_scene31: !input favourite_scene31
-      favourite_scene32: !input favourite_scene32
-      brightness_up_percent: !input brightness_up_percent
-      brightness_down_percent: !input brightness_down_percent
-      color_temperature_up_quantity: !input color_temperature_up_quantity
-      color_temperature_down_quantity: !input color_temperature_down_quantity
-      color_step_size: !input color_step_size
-      transition_time: !input transition_time
-      refresh_level_1: 84
-      refresh_level_2: 168
-      refresh_level_3: 255
-      refresh_wrap_brightness: 2
-      brightness_step_up: "{{ ((maxbrightness * brightness_up_percent) / 100) | int }}"
-      brightness_step_down: "{{ ((maxbrightness * brightness_down_percent) / 100) | int }}"
-      action_key: "{{ remote_action }}"
-      target_light: >
-        {% if active_group_state == '32778' %}
-          {{ light_group1_entity }}
-        {% elif active_group_state == '32779' %}
-          {{ light_group2_entity }}
-        {% elif active_group_state == '32780' %}
-          {{ light_group3_entity }}
-        {% else %}
-          none
-        {% endif %}
-      target_scene_1: >
-        {% if active_group_state == '32778' %}
-          {{ favourite_scene11 if favourite_scene11 else 'none' }}
-        {% elif active_group_state == '32779' %}
-          {{ favourite_scene21 if favourite_scene21 else 'none' }}
-        {% elif active_group_state == '32780' %}
-          {{ favourite_scene31 if favourite_scene31 else 'none' }}
-        {% else %}
-          none
-        {% endif %}
-      target_scene_2: >
-        {% if active_group_state == '32778' %}
-          {{ favourite_scene12 if favourite_scene12 else 'none' }}
-        {% elif active_group_state == '32779' %}
-          {{ favourite_scene22 if favourite_scene22 else 'none' }}
-        {% elif active_group_state == '32780' %}
-          {{ favourite_scene32 if favourite_scene32 else 'none' }}
-        {% else %}
-          none
-        {% endif %}
+- variables:
+    maxbrightness: 255
+    default_brightness: 128
+    default_refresh_brightness: 10
+    default_kelvin: 2700
+    default_min_kelvin: 2000
+    default_max_kelvin: 6500
+    default_rgb:
+    - 255
+    - 255
+    - 255
+    payload: '{{ trigger.payload_json if trigger.payload_json is defined else dict()
+      }}'
+    remote_action: '{{ payload.action | default('''') }}'
+    active_group_state: "{{ payload.action_group | default(0) | int }}"
+    light_group1_entity: !input light_group1_entity
+    light_group2_entity: !input light_group2_entity
+    light_group3_entity: !input light_group3_entity
+    favourite_scene11: !input favourite_scene11
+    favourite_scene12: !input favourite_scene12
+    favourite_scene21: !input favourite_scene21
+    favourite_scene22: !input favourite_scene22
+    favourite_scene31: !input favourite_scene31
+    favourite_scene32: !input favourite_scene32
+    brightness_up_percent: !input brightness_up_percent
+    brightness_down_percent: !input brightness_down_percent
+    color_temperature_up_quantity: !input color_temperature_up_quantity
+    color_temperature_down_quantity: !input color_temperature_down_quantity
+    color_step_size: !input color_step_size
+    transition_time: !input transition_time
+    refresh_level_1: 84
+    refresh_level_2: 168
+    refresh_level_3: 255
+    refresh_wrap_brightness: 2
+    brightness_step_up: '{{ ((maxbrightness * brightness_up_percent) / 100) | int
+      }}'
+    brightness_step_down: '{{ ((maxbrightness * brightness_down_percent) / 100) |
+      int }}'
+    action_key: '{{ remote_action }}'
+    target_light: "{% if active_group_state == 32778 %}\n  {{ light_group1_entity if light_group1_entity else 'none' }}\n{% elif active_group_state == 32779 %}\n  {{ light_group2_entity if light_group2_entity else 'none' }}\n{% elif active_group_state == 32780 %}\n  {{ light_group3_entity if light_group3_entity else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
+    target_scene_1: "{% if active_group_state == 32778 %}\n  {{ favourite_scene11 if favourite_scene11 else 'none' }}\n{% elif active_group_state == 32779 %}\n  {{ favourite_scene21 if favourite_scene21 else 'none' }}\n{% elif active_group_state == 32780 %}\n  {{ favourite_scene31 if favourite_scene31 else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
+    target_scene_2: "{% if active_group_state == 32778 %}\n  {{ favourite_scene12 if favourite_scene12 else 'none' }}\n{% elif active_group_state == 32779 %}\n  {{ favourite_scene22 if favourite_scene22 else 'none' }}\n{% elif active_group_state == 32780 %}\n  {{ favourite_scene32 if favourite_scene32 else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
+- condition: template
+  value_template: "{{ target_light | string | trim | lower != 'none' }}"
+- choose:
+  - conditions:
+    - condition: template
+      value_template: "{{ action_key == 'on' }}"
+    sequence:
+    - action: light.turn_on
+      target:
+        entity_id: '{{ target_light }}'
+  - conditions:
+    - condition: template
+      value_template: "{{ action_key == 'off' }}"
+    sequence:
+    - action: light.turn_off
+      target:
+        entity_id: '{{ target_light }}'
+  - conditions:
+    - condition: template
+      value_template: "{{ action_key == 'brightness_step_down' }}"
+    sequence:
+    - action: light.turn_on
+      target:
+        entity_id: '{{ target_light }}'
+      data:
+        brightness: "{% set value = state_attr(target_light, 'brightness') | default(default_brightness,
+          true) | int - brightness_step_down %} {{ [[value, 1] | max, maxbrightness]
+          | min }}"
+        transition: '{{ transition_time }}'
+  - conditions:
+    - condition: template
+      value_template: "{{ action_key == 'brightness_step_up' }}"
+    sequence:
+    - action: light.turn_on
+      target:
+        entity_id: '{{ target_light }}'
+      data:
+        brightness: "{% set value = state_attr(target_light, 'brightness') | default(default_brightness,
+          true) | int + brightness_step_up %} {{ [[value, 1] | max, maxbrightness]
+          | min }}"
+        transition: '{{ transition_time }}'
+  - conditions:
+    - condition: template
+      value_template: "{{ action_key == 'color_temperature_step_down' }}"
+    sequence:
+    - action: light.turn_on
+      target:
+        entity_id: '{{ target_light }}'
+      data:
+        color_temp_kelvin: >-
+          {% set current_mode = state_attr(target_light, 'color_mode') | default('color_temp') %}
+          {% set is_rgb = current_mode in ['xy', 'hs', 'rgb'] %}
+          {% set ct = state_attr(target_light, 'color_temp_kelvin') | default(default_kelvin, true) | int %}
+          {% set base = default_kelvin if is_rgb else ct %}
+          {% set lower = state_attr(target_light, 'min_color_temp_kelvin') | default(default_min_kelvin, true) | int %}
+          {% set upper = state_attr(target_light, 'max_color_temp_kelvin') | default(default_max_kelvin, true) | int %}
+          {{ [[base - color_temperature_down_quantity, lower] | max, upper] | min }}
+        transition: '{{ transition_time }}'
+  - conditions:
+    - condition: template
+      value_template: "{{ action_key == 'color_temperature_step_up' }}"
+    sequence:
+    - action: light.turn_on
+      target:
+        entity_id: '{{ target_light }}'
+      data:
+        color_temp_kelvin: >-
+          {% set current_mode = state_attr(target_light, 'color_mode') | default('color_temp') %}
+          {% set is_rgb = current_mode in ['xy', 'hs', 'rgb'] %}
+          {% set ct = state_attr(target_light, 'color_temp_kelvin') | default(default_kelvin, true) | int %}
+          {% set base = default_kelvin if is_rgb else ct %}
+          {% set lower = state_attr(target_light, 'min_color_temp_kelvin') | default(default_min_kelvin, true) | int %}
+          {% set upper = state_attr(target_light, 'max_color_temp_kelvin') | default(default_max_kelvin, true) | int %}
+          {{ [[base + color_temperature_up_quantity, lower] | max, upper] | min }}
+        transition: '{{ transition_time }}'
+  - conditions:
+    - condition: template
+      value_template: "{{ action_key == 'recall_1' }}"
+    sequence:
+    - if:
+      - condition: template
+        value_template: "{{ target_scene_1 | string | trim | lower != 'none' }}"
+      then:
+      - action: scene.turn_on
+        target:
+          entity_id: '{{ target_scene_1 }}'
+  - conditions:
+    - condition: template
+      value_template: '{{ action_key == ''recall_2'' }}'
+    sequence:
+    - if:
+      - condition: template
+        value_template: "{{ target_scene_2 | string | trim | lower != 'none' }}"
+      then:
+      - action: scene.turn_on
+        target:
+          entity_id: '{{ target_scene_2 }}'
+  - conditions:
+    - condition: template
+      value_template: '{{ action_key == ''refresh'' }}'
+    sequence:
+    - action: light.turn_on
+      target:
+        entity_id: '{{ target_light }}'
+      data:
+        brightness: "{% set b = state_attr(target_light, 'brightness') | default(default_refresh_brightness,
+          true) | float %}\n{% if b < refresh_level_1 %}\n  {{ refresh_level_1 }}\n{%
+          elif b < refresh_level_2 %}\n  {{ refresh_level_2 }}\n{% elif b < refresh_level_3
+          %}\n  {{ refresh_level_3 }}\n{% else %}\n  {{ refresh_wrap_brightness }}\n{%
+          endif %}\n"
+        transition: '{{ transition_time }}'
+  - conditions:
+    - condition: template
+      value_template: '{{ action_key == ''blue'' }}'
+    sequence:
+    - if:
+      - condition: template
+        value_template: '{{ state_attr(target_light, ''supported_color_modes'') |
+          default([], true) | select(''in'', [''xy'', ''hs'', ''rgb'']) | list | count
+          > 0 }}'
+      then:
+      - variables:
+          target_color:
+          - 0
+          - 0
+          - 255
+          step_amount: !input color_step_size
+      - action: light.turn_on
+        target:
+          entity_id: '{{ target_light }}'
+        data:
+          transition: '{{ transition_time }}'
+          rgb_color: '{% set current = state_attr(target_light, ''rgb_color'') | default(default_rgb,
+            true) %} {% set r_diff = target_color[0] - current[0] %} {% set g_diff
+            = target_color[1] - current[1] %} {% set b_diff = target_color[2] - current[2]
+            %} {% set r_step = step_amount if r_diff > step_amount else (-step_amount
+            if r_diff < -step_amount else r_diff) %} {% set g_step = step_amount if
+            g_diff > step_amount else (-step_amount if g_diff < -step_amount else
+            g_diff) %} {% set b_step = step_amount if b_diff > step_amount else (-step_amount
+            if b_diff < -step_amount else b_diff) %} [{{ (current[0] + r_step) | int
+            }}, {{ (current[1] + g_step) | int }}, {{ (current[2] + b_step) | int
+            }}]
 
-  - condition: template
-    value_template: "{{ target_light != 'none' }}"
+            '
+  - conditions:
+    - condition: template
+      value_template: '{{ action_key == ''green'' }}'
+    sequence:
+    - if:
+      - condition: template
+        value_template: '{{ state_attr(target_light, ''supported_color_modes'') |
+          default([], true) | select(''in'', [''xy'', ''hs'', ''rgb'']) | list | count
+          > 0 }}'
+      then:
+      - variables:
+          target_color:
+          - 0
+          - 255
+          - 0
+          step_amount: !input color_step_size
+      - action: light.turn_on
+        target:
+          entity_id: '{{ target_light }}'
+        data:
+          transition: '{{ transition_time }}'
+          rgb_color: '{% set current = state_attr(target_light, ''rgb_color'') | default(default_rgb,
+            true) %} {% set r_diff = target_color[0] - current[0] %} {% set g_diff
+            = target_color[1] - current[1] %} {% set b_diff = target_color[2] - current[2]
+            %} {% set r_step = step_amount if r_diff > step_amount else (-step_amount
+            if r_diff < -step_amount else r_diff) %} {% set g_step = step_amount if
+            g_diff > step_amount else (-step_amount if g_diff < -step_amount else
+            g_diff) %} {% set b_step = step_amount if b_diff > step_amount else (-step_amount
+            if b_diff < -step_amount else b_diff) %} [{{ (current[0] + r_step) | int
+            }}, {{ (current[1] + g_step) | int }}, {{ (current[2] + b_step) | int
+            }}]
 
-  - choose:
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'on' }}"
-        sequence:
-          - action: light.turn_on
-            target:
-              entity_id: "{{ target_light }}"
+            '
+  - conditions:
+    - condition: template
+      value_template: '{{ action_key == ''red'' }}'
+    sequence:
+    - if:
+      - condition: template
+        value_template: '{{ state_attr(target_light, ''supported_color_modes'') |
+          default([], true) | select(''in'', [''xy'', ''hs'', ''rgb'']) | list | count
+          > 0 }}'
+      then:
+      - variables:
+          target_color:
+          - 255
+          - 0
+          - 0
+          step_amount: !input color_step_size
+      - action: light.turn_on
+        target:
+          entity_id: '{{ target_light }}'
+        data:
+          transition: '{{ transition_time }}'
+          rgb_color: '{% set current = state_attr(target_light, ''rgb_color'') | default(default_rgb,
+            true) %} {% set r_diff = target_color[0] - current[0] %} {% set g_diff
+            = target_color[1] - current[1] %} {% set b_diff = target_color[2] - current[2]
+            %} {% set r_step = step_amount if r_diff > step_amount else (-step_amount
+            if r_diff < -step_amount else r_diff) %} {% set g_step = step_amount if
+            g_diff > step_amount else (-step_amount if g_diff < -step_amount else
+            g_diff) %} {% set b_step = step_amount if b_diff > step_amount else (-step_amount
+            if b_diff < -step_amount else b_diff) %} [{{ (current[0] + r_step) | int
+            }}, {{ (current[1] + g_step) | int }}, {{ (current[2] + b_step) | int
+            }}]
 
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'off' }}"
-        sequence:
-          - action: light.turn_off
-            target:
-              entity_id: "{{ target_light }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'brightness_step_down' }}"
-        sequence:
-          - action: light.turn_on
-            target:
-              entity_id: "{{ target_light }}"
-            data:
-              brightness: >-
-                {% set value = state_attr(target_light, 'brightness') | default(default_brightness, true) | int - brightness_step_down %}
-                {{ [[value, 1] | max, maxbrightness] | min }}
-              transition: "{{ transition_time }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'brightness_step_up' }}"
-        sequence:
-          - action: light.turn_on
-            target:
-              entity_id: "{{ target_light }}"
-            data:
-              brightness: >-
-                {% set value = state_attr(target_light, 'brightness') | default(default_brightness, true) | int + brightness_step_up %}
-                {{ [[value, 1] | max, maxbrightness] | min }}
-              transition: "{{ transition_time }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'color_temperature_step_down' }}"
-        sequence:
-          - action: light.turn_on
-            target:
-              entity_id: "{{ target_light }}"
-            data:
-              kelvin: >-
-                {% set value = state_attr(target_light, 'color_temp_kelvin') | default(default_kelvin, true) | int - color_temperature_down_quantity %}
-                {% set lower = state_attr(target_light, 'min_color_temp_kelvin') | default(default_min_kelvin, true) | int %}
-                {% set upper = state_attr(target_light, 'max_color_temp_kelvin') | default(default_max_kelvin, true) | int %}
-                {{ [[value, lower] | max, upper] | min }}
-              transition: "{{ transition_time }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'color_temperature_step_up' }}"
-        sequence:
-          - action: light.turn_on
-            target:
-              entity_id: "{{ target_light }}"
-            data:
-              kelvin: >-
-                {% set value = state_attr(target_light, 'color_temp_kelvin') | default(default_kelvin, true) | int + color_temperature_up_quantity %}
-                {% set lower = state_attr(target_light, 'min_color_temp_kelvin') | default(default_min_kelvin, true) | int %}
-                {% set upper = state_attr(target_light, 'max_color_temp_kelvin') | default(default_max_kelvin, true) | int %}
-                {{ [[value, lower] | max, upper] | min }}
-              transition: "{{ transition_time }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'recall_1' }}"
-        sequence:
-          - if:
-              - condition: template
-                value_template: "{{ target_scene_1 | trim != 'none' }}"
-            then:
-              - action: scene.turn_on
-                target:
-                  entity_id: "{{ target_scene_1 }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'recall_2' }}"
-        sequence:
-          - if:
-              - condition: template
-                value_template: "{{ target_scene_2 | trim != 'none' }}"
-            then:
-              - action: scene.turn_on
-                target:
-                  entity_id: "{{ target_scene_2 }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'refresh' }}"
-        sequence:
-          - action: light.turn_on
-            target:
-              entity_id: "{{ target_light }}"
-            data:
-              brightness: |
-                {% set b = state_attr(target_light, 'brightness') | default(default_refresh_brightness, true) | float %}
-                {% if b < refresh_level_1 %}
-                  {{ refresh_level_1 }}
-                {% elif b < refresh_level_2 %}
-                  {{ refresh_level_2 }}
-                {% elif b < refresh_level_3 %}
-                  {{ refresh_level_3 }}
-                {% else %}
-                  {{ refresh_wrap_brightness }}
-                {% endif %}
-              transition: "{{ transition_time }}"
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'blue' }}"
-        sequence:
-          - if:
-              - condition: template
-                value_template: "{{ state_attr(target_light, 'supported_color_modes') | default([], true) | select('in', ['xy', 'hs', 'rgb']) | list | count > 0 }}"
-            then:
-              - variables:
-                  target_color: [0, 0, 255]
-                  step_amount: !input color_step_size
-              - action: light.turn_on
-                target:
-                  entity_id: "{{ target_light }}"
-                data:
-                  transition: "{{ transition_time }}"
-                  rgb_color: >
-                    {% set current = state_attr(target_light, 'rgb_color') | default(default_rgb, true) %}
-                    {% set r_diff = target_color[0] - current[0] %}
-                    {% set g_diff = target_color[1] - current[1] %}
-                    {% set b_diff = target_color[2] - current[2] %}
-                    {% set r_step = step_amount if r_diff > step_amount else (-step_amount if r_diff < -step_amount else r_diff) %}
-                    {% set g_step = step_amount if g_diff > step_amount else (-step_amount if g_diff < -step_amount else g_diff) %}
-                    {% set b_step = step_amount if b_diff > step_amount else (-step_amount if b_diff < -step_amount else b_diff) %}
-                    [{{ (current[0] + r_step) | int }}, {{ (current[1] + g_step) | int }}, {{ (current[2] + b_step) | int }}]
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'green' }}"
-        sequence:
-          - if:
-              - condition: template
-                value_template: "{{ state_attr(target_light, 'supported_color_modes') | default([], true) | select('in', ['xy', 'hs', 'rgb']) | list | count > 0 }}"
-            then:
-              - variables:
-                  target_color: [0, 255, 0]
-                  step_amount: !input color_step_size
-              - action: light.turn_on
-                target:
-                  entity_id: "{{ target_light }}"
-                data:
-                  transition: "{{ transition_time }}"
-                  rgb_color: >
-                    {% set current = state_attr(target_light, 'rgb_color') | default(default_rgb, true) %}
-                    {% set r_diff = target_color[0] - current[0] %}
-                    {% set g_diff = target_color[1] - current[1] %}
-                    {% set b_diff = target_color[2] - current[2] %}
-                    {% set r_step = step_amount if r_diff > step_amount else (-step_amount if r_diff < -step_amount else r_diff) %}
-                    {% set g_step = step_amount if g_diff > step_amount else (-step_amount if g_diff < -step_amount else g_diff) %}
-                    {% set b_step = step_amount if b_diff > step_amount else (-step_amount if b_diff < -step_amount else b_diff) %}
-                    [{{ (current[0] + r_step) | int }}, {{ (current[1] + g_step) | int }}, {{ (current[2] + b_step) | int }}]
-
-      - conditions:
-          - condition: template
-            value_template: "{{ action_key == 'red' }}"
-        sequence:
-          - if:
-              - condition: template
-                value_template: "{{ state_attr(target_light, 'supported_color_modes') | default([], true) | select('in', ['xy', 'hs', 'rgb']) | list | count > 0 }}"
-            then:
-              - variables:
-                  target_color: [255, 0, 0]
-                  step_amount: !input color_step_size
-              - action: light.turn_on
-                target:
-                  entity_id: "{{ target_light }}"
-                data:
-                  transition: "{{ transition_time }}"
-                  rgb_color: >
-                    {% set current = state_attr(target_light, 'rgb_color') | default(default_rgb, true) %}
-                    {% set r_diff = target_color[0] - current[0] %}
-                    {% set g_diff = target_color[1] - current[1] %}
-                    {% set b_diff = target_color[2] - current[2] %}
-                    {% set r_step = step_amount if r_diff > step_amount else (-step_amount if r_diff < -step_amount else r_diff) %}
-                    {% set g_step = step_amount if g_diff > step_amount else (-step_amount if g_diff < -step_amount else g_diff) %}
-                    {% set b_step = step_amount if b_diff > step_amount else (-step_amount if b_diff < -step_amount else b_diff) %}
-                    [{{ (current[0] + r_step) | int }}, {{ (current[1] + g_step) | int }}, {{ (current[2] + b_step) | int }}]
-    default: []
+            '
+  default: []
