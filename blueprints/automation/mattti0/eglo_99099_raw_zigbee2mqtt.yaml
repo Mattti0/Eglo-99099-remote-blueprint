@@ -1,7 +1,7 @@
 blueprint:
   name: EGLO 99099 blueprint (raw Zigbee2MQTT)
   description: This blueprint maps all buttons on the remote to actions/scenes/lights using raw Zigbee2MQTT payloads.
-  author: Zoltán Szamosi
+  author: Matti Wenell
   domain: automation
   homeassistant:
     min_version: 2024.6.0
@@ -114,7 +114,7 @@ blueprint:
           max: 2
           step: 0.01
           unit_of_measurement: s
-  source_url: https://community.home-assistant.io/t/eglo-99099-remote-blueprint/858066
+  source_url: https://github.com/Mattti0/Eglo-99099-remote-blueprint/blob/main/blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml
 
 mode: single
 max_exceeded: silent
@@ -128,6 +128,12 @@ conditions: []
 actions:
   - variables:
       maxbrightness: 255
+      default_brightness: 128
+      default_refresh_brightness: 10
+      default_kelvin: 2700
+      default_min_kelvin: 2000
+      default_max_kelvin: 6500
+      default_rgb: [255, 255, 255]
       payload: "{{ trigger.payload_json if trigger.payload_json is defined else dict() }}"
       remote_action: "{{ payload.action | default('') }}"
       active_group_state: "{{ payload.action_group | default('') | string }}"
@@ -146,6 +152,10 @@ actions:
       color_temperature_down_quantity: !input color_temperature_down_quantity
       color_step_size: !input color_step_size
       transition_time: !input transition_time
+      refresh_level_1: 84
+      refresh_level_2: 168
+      refresh_level_3: 255
+      refresh_wrap_brightness: 2
       brightness_step_up: "{{ ((maxbrightness * brightness_up_percent) / 100) | int }}"
       brightness_step_down: "{{ ((maxbrightness * brightness_down_percent) / 100) | int }}"
       action_key: >
@@ -213,7 +223,9 @@ actions:
             target:
               entity_id: "{{ target_light }}"
             data:
-              brightness: "{{ [[state_attr(target_light, 'brightness') | int(1) - brightness_step_down, 1] | max, maxbrightness] | min }}"
+              brightness: >-
+                {% set value = state_attr(target_light, 'brightness') | default(default_brightness, true) | int - brightness_step_down %}
+                {{ [[value, 1] | max, maxbrightness] | min }}
               transition: "{{ transition_time }}"
 
       - conditions:
@@ -224,7 +236,9 @@ actions:
             target:
               entity_id: "{{ target_light }}"
             data:
-              brightness: "{{ [[state_attr(target_light, 'brightness') | int(1) + brightness_step_up, 1] | max, maxbrightness] | min }}"
+              brightness: >-
+                {% set value = state_attr(target_light, 'brightness') | default(default_brightness, true) | int + brightness_step_up %}
+                {{ [[value, 1] | max, maxbrightness] | min }}
               transition: "{{ transition_time }}"
 
       - conditions:
@@ -235,7 +249,11 @@ actions:
             target:
               entity_id: "{{ target_light }}"
             data:
-              kelvin: "{{ [[state_attr(target_light, 'color_temp_kelvin') | int + color_temperature_up_quantity, state_attr(target_light, 'max_color_temp_kelvin')] | min, state_attr(target_light, 'min_color_temp_kelvin')] | max }}"
+              kelvin: >-
+                {% set value = state_attr(target_light, 'color_temp_kelvin') | default(default_kelvin, true) | int - color_temperature_down_quantity %}
+                {% set lower = state_attr(target_light, 'min_color_temp_kelvin') | default(default_min_kelvin, true) | int %}
+                {% set upper = state_attr(target_light, 'max_color_temp_kelvin') | default(default_max_kelvin, true) | int %}
+                {{ [[value, lower] | max, upper] | min }}
               transition: "{{ transition_time }}"
 
       - conditions:
@@ -246,7 +264,11 @@ actions:
             target:
               entity_id: "{{ target_light }}"
             data:
-              kelvin: "{{ [[state_attr(target_light, 'color_temp_kelvin') | int - color_temperature_down_quantity, state_attr(target_light, 'min_color_temp_kelvin')] | max, state_attr(target_light, 'max_color_temp_kelvin')] | min }}"
+              kelvin: >-
+                {% set value = state_attr(target_light, 'color_temp_kelvin') | default(default_kelvin, true) | int + color_temperature_up_quantity %}
+                {% set lower = state_attr(target_light, 'min_color_temp_kelvin') | default(default_min_kelvin, true) | int %}
+                {% set upper = state_attr(target_light, 'max_color_temp_kelvin') | default(default_max_kelvin, true) | int %}
+                {{ [[value, lower] | max, upper] | min }}
               transition: "{{ transition_time }}"
 
       - conditions:
@@ -274,14 +296,15 @@ actions:
               entity_id: "{{ target_light }}"
             data:
               brightness: |
-                {% if state_attr(target_light, 'brightness') | float(10) <= 83 %}
-                  84
-                {% elif 84 <= state_attr(target_light, 'brightness') | float(10) <= 167 %}
-                  168
-                {% elif 168 <= state_attr(target_light, 'brightness') | float(10) <= 254 %}
-                  255
+                {% set b = state_attr(target_light, 'brightness') | default(default_refresh_brightness, true) | float %}
+                {% if b < refresh_level_1 %}
+                  {{ refresh_level_1 }}
+                {% elif b < refresh_level_2 %}
+                  {{ refresh_level_2 }}
+                {% elif b < refresh_level_3 %}
+                  {{ refresh_level_3 }}
                 {% else %}
-                  2
+                  {{ refresh_wrap_brightness }}
                 {% endif %}
               transition: "{{ transition_time }}"
 
@@ -302,7 +325,7 @@ actions:
                 data:
                   transition: "{{ transition_time }}"
                   rgb_color: >
-                    {% set current = state_attr(target_light, 'rgb_color') | default([255, 255, 255], true) %}
+                    {% set current = state_attr(target_light, 'rgb_color') | default(default_rgb, true) %}
                     {% set r_diff = target_color[0] - current[0] %}
                     {% set g_diff = target_color[1] - current[1] %}
                     {% set b_diff = target_color[2] - current[2] %}
@@ -328,7 +351,7 @@ actions:
                 data:
                   transition: "{{ transition_time }}"
                   rgb_color: >
-                    {% set current = state_attr(target_light, 'rgb_color') | default([255, 255, 255], true) %}
+                    {% set current = state_attr(target_light, 'rgb_color') | default(default_rgb, true) %}
                     {% set r_diff = target_color[0] - current[0] %}
                     {% set g_diff = target_color[1] - current[1] %}
                     {% set b_diff = target_color[2] - current[2] %}
@@ -354,7 +377,7 @@ actions:
                 data:
                   transition: "{{ transition_time }}"
                   rgb_color: >
-                    {% set current = state_attr(target_light, 'rgb_color') | default([255, 255, 255], true) %}
+                    {% set current = state_attr(target_light, 'rgb_color') | default(default_rgb, true) %}
                     {% set r_diff = target_color[0] - current[0] %}
                     {% set g_diff = target_color[1] - current[1] %}
                     {% set b_diff = target_color[2] - current[2] %}

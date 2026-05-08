@@ -2,5 +2,13 @@
 
 Home Assistant blueprint for the Eglo connect.z 99099 Zigbee remote using raw Zigbee2MQTT MQTT payloads (`action` + `action_group`).
 
+[![Open your Home Assistant instance and import this blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://raw.githubusercontent.com/Mattti0/Eglo-99099-remote-blueprint/main/blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml)
+
 Blueprint file:
-- `/home/runner/work/Eglo-99099-remote-blueprint/Eglo-99099-remote-blueprint/blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml`
+- `blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml`
+
+Repository:
+- https://github.com/Mattti0/Eglo-99099-remote-blueprint
+
+Original blueprint inspiration:
+- https://community.home-assistant.io/t/eglo-99099-remote-blueprint/858066
