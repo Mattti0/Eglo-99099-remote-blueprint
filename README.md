@@ -7,6 +7,8 @@ Home Assistant blueprint for the Eglo connect.z 99099 Zigbee remote using raw Zi
 
 The two favorite buttons (heart) cannot be used via a Zigbee network, as the remote control only sends these events directly to the light when directly paired with an EGLO light.
 
+Blueprint file:
+- `blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml`
 
 ## Setup
 
@@ -30,9 +32,6 @@ This automation reacts to the "refresh" button press and moves the dropdown to t
 2. **Trigger**: Select State trigger and choose the helper you created in Step 1 (Living Room State). This will trigger whenever the state changes
 3. **Action**: Add your desired actions based on the helper's state (e.g., control lights, activate scenes, etc.)
 4. **Optional**: Use conditions to check the current state and execute different actions accordingly
-
-Blueprint file:
-- `blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml`
 
 ## References
 - Zigbee2MQTT device documentation: https://www.zigbee2mqtt.io/devices/99099.html
