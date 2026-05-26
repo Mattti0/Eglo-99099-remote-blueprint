@@ -103,6 +103,16 @@ blueprint:
           step: 0.01
           unit_of_measurement: s
           mode: slider
+    refresh_input_select:
+      name: Refresh input select helper
+      description: Input select helper entity to advance to next option when refresh button is pressed (optional)
+      default: ""
+      selector:
+        entity:
+          filter:
+          - domain:
+            - input_select
+          multiple: false
   source_url: https://raw.githubusercontent.com/Mattti0/Eglo-99099-remote-blueprint/main/blueprints/automation/mattti0/eglo_99099_raw_zigbee2mqtt.yaml
 mode: single
 max_exceeded: silent
@@ -135,10 +145,7 @@ actions:
     color_temperature_down_quantity: !input color_temperature_down_quantity
     color_step_size: !input color_step_size
     transition_time: !input transition_time
-    refresh_level_1: 84
-    refresh_level_2: 168
-    refresh_level_3: 255
-    refresh_wrap_brightness: 2
+    refresh_input_select: !input refresh_input_select
     brightness_step_up: '{{ ((maxbrightness * brightness_up_percent) / 100) | int
       }}'
     brightness_step_down: '{{ ((maxbrightness * brightness_down_percent) / 100) |
@@ -224,16 +231,15 @@ actions:
     - condition: template
       value_template: '{{ action_key == ''refresh'' }}'
     sequence:
-    - action: light.turn_on
-      target:
-        entity_id: '{{ target_light }}'
-      data:
-        brightness: "{% set b = state_attr(target_light, 'brightness') | default(default_refresh_brightness,
-          true) | float %}\n{% if b < refresh_level_1 %}\n  {{ refresh_level_1 }}\n{%
-          elif b < refresh_level_2 %}\n  {{ refresh_level_2 }}\n{% elif b < refresh_level_3
-          %}\n  {{ refresh_level_3 }}\n{% else %}\n  {{ refresh_wrap_brightness }}\n{%
-          endif %}\n"
-        transition: '{{ transition_time }}'
+    - if:
+      - condition: template
+        value_template: '{{ refresh_input_select != "" }}'
+      then:
+      - action: input_select.select_next
+        target:
+          entity_id: '{{ refresh_input_select }}'
+        data:
+          cycle: true
   - conditions:
     - condition: template
       value_template: '{{ action_key == ''blue'' }}'
