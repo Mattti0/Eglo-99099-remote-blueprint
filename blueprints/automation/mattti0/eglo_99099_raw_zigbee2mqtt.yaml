@@ -2,7 +2,7 @@ blueprint:
   name: EGLO 99099 blueprint (raw Zigbee2MQTT)
   description: This blueprint maps the usable buttons on the remote to light actions
     using raw Zigbee2MQTT payloads. The two favourite (heart) buttons are not
-    exposed as Zigbee events and cannot be used for scene triggers.
+    exposed as Zigbee events and cannot be used for scene triggers. Tested with Zigbee2MQTT 2.14
   author: Matti Wenell
   domain: automation
   homeassistant:
@@ -151,7 +151,7 @@ actions:
     brightness_step_down: '{{ ((maxbrightness * brightness_down_percent) / 100) |
       int }}'
     action_key: '{{ remote_action }}'
-    target_light: "{% if active_group_state == 32778 %}\n  {{ light_group1_entity if light_group1_entity else 'none' }}\n{% elif active_group_state == 32779 %}\n  {{ light_group2_entity if light_group2_entity else 'none' }}\n{% elif active_group_state == 32780 %}\n  {{ light_group3_entity if light_group3_entity else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
+    target_light: "{% if active_group_state == 1 %}\n  {{ light_group1_entity if light_group1_entity else 'none' }}\n{% elif active_group_state == 2 %}\n  {{ light_group2_entity if light_group2_entity else 'none' }}\n{% elif active_group_state == 3 %}\n  {{ light_group3_entity if light_group3_entity else 'none' }}\n{% else %}\n  none\n{% endif %}\n"
 - condition: template
   value_template: "{{ target_light | string | trim | lower != 'none' }}"
 - choose:
